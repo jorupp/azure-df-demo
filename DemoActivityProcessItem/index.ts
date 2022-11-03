@@ -11,8 +11,11 @@
 
 import { AzureFunction, Context } from "@azure/functions"
 
-const activityFunction: AzureFunction = async function (context: Context): Promise<string> {
-    return `Hello ${context.bindings.name}!`;
+const activityFunction: AzureFunction = async function (context: Context): Promise<void> {
+    const delay = Math.floor(Math.random()*3000);
+    context.log(`DemoActivityProcessItem - processing ${context.bindings.name} - will wait ${delay} ms`);
+    await new Promise((res) => setTimeout(res, 2000));
+    context.log(`DemoActivityProcessItem - processed ${context.bindings.name} by waiting ${delay} ms`);
 };
 
 export default activityFunction;

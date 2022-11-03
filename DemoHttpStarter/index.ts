@@ -3,7 +3,7 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 
 const httpStart: AzureFunction = async function (context: Context, req: HttpRequest): Promise<any> {
     const client = df.getClient(context);
-    const instanceId = await client.startNew(req.params.functionName, undefined, req.body);
+    const instanceId = await client.startNew("DemoOrchestrator", undefined, req.body);
 
     context.log(`Started orchestration with ID = '${instanceId}'.`);
 

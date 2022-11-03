@@ -9,18 +9,28 @@
  *    function app in Kudu
  */
 
+// start via http://localhost:7071/api/orchestrators/DemoOrchestrator
 import * as df from "durable-functions"
 
 const orchestrator = df.orchestrator(function* (context) {
-    const outputs = [];
 
-    // Replace "Hello" with the name of your Durable Activity Function.
-    outputs.push(yield context.df.callActivity("Hello", "Tokyo"));
-    outputs.push(yield context.df.callActivity("Hello", "Seattle"));
-    outputs.push(yield context.df.callActivity("Hello", "London"));
+    context.log(`Calling DemoActivityGetItems - ${context.df.isReplaying}`);
+    const items: string[] = yield context.df.callActivity("DemoActivityGetItems");
+    context.log(`Got ${items.length} items from DemoActivityGetItems - ${context.df.isReplaying}`);
 
-    // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
-    return outputs;
+    const tasks = [];
+    for(const item of items) {
+        context.log(`Calling DemoActivityProcessItem for ${item} - ${context.df.isReplaying}`);
+        tasks.push(context.df.callActivity("DemoActivityProcessItem", item));
+    }
+
+    context.log(`Waiting for DemoActivityProcessItem calls - ${context.df.isReplaying}`);
+    yield context.df.Task.all(tasks);
+    context.log(`Done waiting for DemoActivityProcessItem calls - ${context.df.isReplaying}`);
+
+    context.log(`Calling DemoActivityCreateSummary - ${context.df.isReplaying}`);
+    yield context.df.callActivity("DemoActivityCreateSummary", items);
+    context.log(`Called DemoActivityCreateSummary - ${context.df.isReplaying}`);
 });
 
 export default orchestrator;
